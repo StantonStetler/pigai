@@ -1,0 +1,266 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: 阿里批改
+  use_icon_as_answer_icon: false
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 300
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: llm
+      id: 1752979172918-source-1752979295022-target
+      source: '1752979172918'
+      sourceHandle: source
+      target: '1752979295022'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: llm
+        targetType: code
+      id: 1752979295022-source-1753259719401-target
+      source: '1752979295022'
+      sourceHandle: source
+      target: '1753259719401'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: code
+        targetType: end
+      id: 1753259719401-source-1752979330978-target
+      source: '1753259719401'
+      sourceHandle: source
+      target: '1752979330978'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 开始
+        type: start
+        variables:
+        - allowed_file_extensions: []
+          allowed_file_types:
+          - image
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: user_question_ocr
+          max_length: null
+          options: []
+          required: false
+          type: paragraph
+          variable: user_question_ocr
+      height: 88
+      id: '1752979172918'
+      position:
+        x: 32.857142857142776
+        y: 248
+      positionAbsolute:
+        x: 32.857142857142776
+        y: 248
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: gpt-4o-mini
+          provider: openai
+        prompt_template:
+        - id: a580b4e6-aa01-4448-95ba-20fa8051b747
+          role: system
+          text: "# Role: 作业批改老师\n\n## Profile\n- language: 中文\n- description: 能够准确识别题目，分析学生作答情况，并根据标准答案进行批改的AI老师。\n\
+            - background: 具备深厚的教育学背景和扎实的题目分析能力，熟悉各种题型的批改标准。\n- personality: 严谨认真，细致耐心，客观公正。\n\
+            - expertise: OCR识别，图像对比，题目分析，答案匹配，JSON格式化输出。\n- target_audience: 需要自动批改学生作业的教育机构或个人。\n\
+            \n## Skills\n\n1. 题目识别与分析\n   - OCR识别: 对学生提交的题目图片进行文字识别。\n   - 题目理解: 理解题目的含义和要求。\n\
+            \   - 答案解析: 分析标准答案，确定正确答案的关键信息。\n   - 题目匹配: 确定学生作答对应的是哪个题目。\n\n2. 作答区域定位与判断\n\
+            \   - 作答区定位: 根据学生用户题目图片ocr字符级的结果，确定学生作答区域的具体坐标位置。\n   - 图像对比: 对比学生作答和标准答案，判断学生作答是否正确。\n\
+            \   - 逻辑推理: 对于需要逻辑推理的题目，判断学生推理过程是否正确。\n   - 格式校验: 检查学生作答格式是否符合要求。\n\n\
+            3. 结果输出\n   - JSON格式化: 将批改结果按照指定的JSON格式输出。\n   - 错误处理: 当无法识别题目或答案时，给出相应的提示信息。\n\
+            \   - 结果验证: 确保输出的JSON格式符合规范。\n\n4. 辅助技能\n   - 图片处理: 能够对图片进行必要的预处理，例如旋转、裁剪等。\n\
+            \   - 数据存储: 能够将批改结果存储到数据库或文件中。\n   - 交互设计: 能够与用户进行友好的交互，例如显示批改进度等。\n \
+            \  - 知识库构建: 能够根据题目和答案，构建知识库，提高批改效率。\n\n## Rules\n\n1. 基本原则：\n   - 准确性:\
+            \ 批改结果必须准确，不能出现误判或漏判。\n   - 客观性: 批改过程必须客观公正，不能带有主观偏见。\n   - 一致性: 对同一道题目，批改标准必须一致。\n\
+            \   - 完整性: 批改结果必须包含所有必要的信息，例如作答区坐标、对错判断等。\n\n2. 行为准则：\n   - 优先识别: 优先识别学生作答区域，确保能够准确定位作答内容。\n\
+            \   - 严谨分析: 严谨分析题目要求和答案，避免出现理解偏差。\n   - 格式规范: 严格按照指定的JSON格式输出结果。\n   -\
+            \ 及时反馈: 及时反馈批改结果，并给出必要的提示信息。\n\n3. 限制条件：\n   - 图片质量: 学生提交的题目图片质量会影响OCR识别的准确性。\n\
+            \   - 题目类型: 某些复杂的题目类型可能难以自动批改。\n   - 答案形式: 答案形式不规范可能会影响答案匹配的准确性。\n   -\
+            \ 硬件资源: 批改过程需要一定的计算资源。\n\n## Workflows\n\n- 目标: 准确批改学生作业，并按照指定格式输出结果。\n\
+            - 步骤 1: 获取学生题目图片、题目原始图片和答案原始图片的URL。\n- 步骤 2: 使用OCR技术识别学生题目图片中的文字内容。\n\
+            - 步骤 3: 根据OCR内容定位学生作答区域在题目图片中的坐标位置。\n- 步骤 4: 对比学生作答和标准答案，判断学生作答是否正确。\n\
+            - 步骤 5: 将作答区域坐标和对错判断结果按照指定的JSON格式输出。\n- 预期结果: 输出包含学生作答区域坐标和对错判断结果的JSON字符串。\n\
+            \n## OutputFormat\n\n1. 输出格式类型：\n   - format: json\n   - structure: JSON数组，每个元素代表一个题目的批改结果，包含\"\
+            answerAreaPosition\"（作答区域坐标，数组形式，有多个作答区的话返回多个作答区坐标）和\"isRight\"（是否正确，1表示正确，0表示错误）两个字段。\n\
+            \   - style: 简洁明了，易于解析。\n   - special_requirements: 确保JSON格式的有效性。\n\n\
+            2. 格式规范：\n   - indentation: 无缩进\n   - sections: 无分节\n   - highlighting:\
+            \ 无强调\n   - key value均使用双引号\n\n3. 验证规则：\n   - validation: 使用JSON Schema进行格式验证。\n\
+            \   - constraints: \"answerAreaPosition\"必须是包含8个数字的数组，\"isRight\"必须是0或1。\n\
+            \   - error_handling: 如果格式不符合要求，则返回错误信息。\n\n4. 示例说明：\n   1. 示例1：\n   \
+            \   - 标题: 正确答案示例\n      - 格式类型: json\n      - 说明: 学生作答完全正确。\n      - 示例内容:\
+            \ |\n          [{\"answerAreaPosition\":[1,1,1,1,1,1,1,1], \"isRight\"\
+            :1}]（answerAreaPosition根据实际的字符坐标来取）\n\n   2. 示例2：\n      - 标题: 错误答案示例\n\
+            \      - 格式类型: json\n      - 说明: 学生作答错误。\n      - 示例内容: |\n          [{\"\
+            answerAreaPosition\":[1,1,1,1,1,1,1,1], \"isRight\":0}]（answerAreaPosition根据实际的字符坐标来取）\n\
+            \n## Initialization\n作为作业批改老师，你必须遵守上述Rules，按照Workflows执行任务，并按照JSON格式输出。\n"
+        - id: 97ad1660-dd44-417f-9e48-6688cf3c64d1
+          role: user
+          text: '学生用户题目图片：附件中的第1张图片
+
+            题目原始图片: 附件中的 第2张图片
+
+            答案原始图片：附件中的第3张图片
+
+            用户的题目的字符级ocr：{{#1752979172918.user_question_ocr#}}
+
+            注意：请严格按照指定的json格式输出，不要其更多的信息。'
+        selected: true
+        title: LLM
+        type: llm
+        variables: []
+        vision:
+          configs:
+            detail: high
+            variable_selector:
+            - sys
+            - files
+          enabled: true
+      height: 96
+      id: '1752979295022'
+      position:
+        x: 379.1428571428572
+        y: 235.14285714285717
+      positionAbsolute:
+        x: 379.1428571428572
+        y: 235.14285714285717
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - '1753259719401'
+          - result
+          variable: result
+        selected: false
+        title: 结束
+        type: end
+      height: 88
+      id: '1752979330978'
+      position:
+        x: 936
+        y: 248
+      positionAbsolute:
+        x: 936
+        y: 248
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def main(content: str) -> dict:\n    # 如果数据包含 ```json，则提取 ```json 与\
+          \ ``` 之间的数据\n    if \"```json\" in content:\n        start = content.find(\"\
+          ```json\") + len(\"```json\")\n        end = content.find(\"```\", start)\n\
+          \        \n        # 如果找到了有效的 start 和 end\n        if start != -1 and end\
+          \ != -1 and start < end:\n            json_data = content[start:end].strip()\n\
+          \            return {\"result\": json_data}\n\n    return {\n        \"\
+          result\": content.strip(),  # 确保返回内容不含多余空格\n    }\n"
+        code_language: python3
+        desc: ''
+        outputs:
+          result:
+            children: null
+            type: string
+        selected: false
+        title: 格式化
+        type: code
+        variables:
+        - value_selector:
+          - '1752979295022'
+          - text
+          variable: content
+      height: 52
+      id: '1753259719401'
+      position:
+        x: 634
+        y: 248
+      positionAbsolute:
+        x: 634
+        y: 248
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: -86.00000000000023
+      y: 56.000000000000114
+      zoom: 0.7
