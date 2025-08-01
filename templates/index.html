@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作业批改系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .upload-section.dragover {
+            border-color: #4facfe;
+            background: #e3f2fd;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .process-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 15px;
+            display: none;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .process-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .preview-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .results-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .question-result {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #4facfe;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .question-number {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .question-score {
+            font-size: 1.5em;
+            font-weight: bold;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+        }
+
+        .score-excellent { background: #27ae60; }
+        .score-good { background: #f39c12; }
+        .score-poor { background: #e74c3c; }
+
+        .question-text {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid #17a2b8;
+        }
+
+        .question-feedback {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #28a745;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .upload-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>作业批改系统</h1>
+            <p>智能图像识别 · OCR文字提取 · 知识库检索 · AI批改</p>
+        </div>
+        
+        <div class="content">
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">拖拽作业图片到此处，或点击按钮选择文件</div>
+                <div class="upload-text">支持 JPG、PNG、GIF、BMP 格式，最大16MB</div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    选择文件
+                </button>
+                <button class="process-btn" id="processBtn" onclick="processHomework()">
+                    开始批改
+                </button>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <div class="preview-section" id="previewSection">
+                <h3>预览图片</h3>
+                <img id="previewImage" class="preview-image" src="" alt="预览">
+            </div>
+
+            <div class="loading" id="loadingSection">
+                <div class="spinner"></div>
+                <p>正在处理作业，请稍候...</p>
+                <p>这可能需要几分钟时间，请耐心等待</p>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <h3>批改结果</h3>
+                <div id="resultsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFilePath = null;
+
+        // 文件输入变化处理
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        // 拖拽上传功能
+        const uploadSection = document.getElementById('uploadSection');
+        
+        uploadSection.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // 处理文件上传
+        function handleFile(file) {
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                showError('请选择图片文件');
+                return;
+            }
+
+            // 验证文件大小 (16MB)
+            if (file.size > 16 * 1024 * 1024) {
+                showError('文件大小不能超过16MB');
+                return;
+            }
+
+            // 显示预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImage').src = e.target.result;
+                document.getElementById('previewSection').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            // 上传文件
+            uploadFile(file);
+        }
+
+        // 上传文件到服务器
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    uploadedFilePath = data.filename;
+                    document.getElementById('processBtn').style.display = 'inline-block';
+                    showSuccess('文件上传成功！点击"开始批改"进行处理');
+                } else {
+                    showError('文件上传失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                showError('上传出错: ' + error.message);
+            });
+        }
+
+        // 处理作业
+        function processHomework() {
+            if (!uploadedFilePath) {
+                showError('请先上传文件');
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('processBtn').disabled = true;
+            hideMessages();
+
+            fetch('/api/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filename: uploadedFilePath
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('processBtn').disabled = false;
+
+                if (data.success) {
+                    displayResults(data.results);
+                    showSuccess(`批改完成！处理时间: ${data.processing_time.toFixed(1)}秒`);
+                } else {
+                    showError('处理失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('processBtn').disabled = false;
+                showError('处理出错: ' + error.message);
+            });
+        }
+
+        // 显示批改结果
+        function displayResults(results) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+
+            // 创建图片容器
+            const imageContainerDiv = document.createElement('div');
+            imageContainerDiv.className = 'image-container';
+            imageContainerDiv.style.position = 'relative';
+            imageContainerDiv.style.display = 'inline-block';
+            
+            // 创建图片元素
+            const originalImage = document.createElement('img');
+            originalImage.src = document.getElementById('previewImage').src;
+            originalImage.style.maxWidth = '100%';
+            originalImage.style.height = 'auto';
+            originalImage.style.display = 'block';
+            
+            imageContainerDiv.appendChild(originalImage);
+            
+            // 图片加载完成后绘制标注框
+            originalImage.onload = function() {
+                console.log('图片加载完成，开始绘制标注框');
+                console.log('原始图片尺寸:', originalImage.naturalWidth, 'x', originalImage.naturalHeight);
+                console.log('显示图片尺寸:', originalImage.clientWidth, 'x', originalImage.clientHeight);
+                
+                const imageRect = originalImage.getBoundingClientRect();
+                const scaleX = originalImage.clientWidth / originalImage.naturalWidth;
+                const scaleY = originalImage.clientHeight / originalImage.naturalHeight;
+                
+                console.log('缩放比例:', scaleX, scaleY);
+                console.log('结果数据:', results);
+                
+                results.forEach((result, index) => {
+                    console.log(`处理第${index + 1}题:`, result);
+                    const coordinates = result.coordinates;
+                    console.log('题目坐标:', coordinates, '类型:', typeof coordinates);
+                    
+                    // 检查坐标格式：支持对象格式(新)和数组格式(旧)
+                    let x1, y1, x2, y2;
+                    if (coordinates && typeof coordinates === 'object' && !Array.isArray(coordinates)) {
+                        // 新的对象格式
+                        x1 = coordinates.x1;
+                        y1 = coordinates.y1;
+                        x2 = coordinates.x2;
+                        y2 = coordinates.y2;
+                    } else if (coordinates && Array.isArray(coordinates) && coordinates.length >= 8) {
+                        // 旧的数组格式
+                        x1 = coordinates[0];
+                        y1 = coordinates[1];
+                        x2 = coordinates[4];
+                        y2 = coordinates[5];
+                    } else {
+                        console.log('坐标数据格式不正确，跳过');
+                        return;
+                    }
+                    
+                    // 验证坐标值是否有效
+                    if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) {
+                        console.log('坐标值缺失，跳过');
+                        return;
+                    }
+                    
+                    // 检查并修正超出边界的题目坐标
+                    let correctedX1 = Math.max(0, Math.min(x1, originalImage.naturalWidth));
+                    let correctedY1 = Math.max(0, Math.min(y1, originalImage.naturalHeight));
+                    let correctedX2 = Math.max(0, Math.min(x2, originalImage.naturalWidth));
+                    let correctedY2 = Math.max(0, Math.min(y2, originalImage.naturalHeight));
+                    
+                    // 记录修正情况
+                    let correctionMade = false;
+                    if (x1 !== correctedX1) {
+                        console.warn(`题目坐标x1值 ${x1} 超出边界，修正为 ${correctedX1}`);
+                        correctionMade = true;
+                    }
+                    if (y1 !== correctedY1) {
+                        console.warn(`题目坐标y1值 ${y1} 超出边界，修正为 ${correctedY1}`);
+                        correctionMade = true;
+                    }
+                    if (x2 !== correctedX2) {
+                        console.warn(`题目坐标x2值 ${x2} 超出边界，修正为 ${correctedX2}`);
+                        correctionMade = true;
+                    }
+                    if (y2 !== correctedY2) {
+                        console.warn(`题目坐标y2值 ${y2} 超出边界，修正为 ${correctedY2}`);
+                        correctionMade = true;
+                    }
+                    
+                    if (correctionMade) {
+                        alert('发现题目坐标超出图片边界，已自动修正');
+                    }
+                    
+                    // 获取题目坐标框
+                    const questionBox = {
+                        left: Math.min(correctedX1, correctedX2) * scaleX,
+                        top: Math.min(correctedY1, correctedY2) * scaleY,
+                        right: Math.max(correctedX1, correctedX2) * scaleX,
+                        bottom: Math.max(correctedY1, correctedY2) * scaleY
+                    };
+                    
+                    // 绘制题目框
+                    const questionFrame = document.createElement('div');
+                    questionFrame.className = 'question-frame';
+                    questionFrame.style.position = 'absolute';
+                    questionFrame.style.left = questionBox.left + 'px';
+                    questionFrame.style.top = questionBox.top + 'px';
+                    questionFrame.style.width = (questionBox.right - questionBox.left) + 'px';
+                    questionFrame.style.height = (questionBox.bottom - questionBox.top) + 'px';
+                    questionFrame.style.border = '2px solid #007bff';
+                    questionFrame.style.borderRadius = '4px';
+                    questionFrame.style.background = 'rgba(0, 123, 255, 0.1)';
+                    questionFrame.style.zIndex = '1';
+                    
+                    // 题目编号标签
+                    const questionLabel = document.createElement('div');
+                    questionLabel.textContent = `题目${index + 1}`;
+                    questionLabel.style.position = 'absolute';
+                    questionLabel.style.top = '-20px';
+                    questionLabel.style.left = '0px';
+                    questionLabel.style.background = '#007bff';
+                    questionLabel.style.color = 'white';
+                    questionLabel.style.padding = '2px 6px';
+                    questionLabel.style.fontSize = '12px';
+                    questionLabel.style.borderRadius = '3px';
+                    questionFrame.appendChild(questionLabel);
+                    
+                    imageContainerDiv.appendChild(questionFrame);
+                    
+                    // 处理作答区域
+                    const gradingResult = result.grading_result;
+                    // 检查嵌套的grading_result结构
+                    const innerGradingResult = gradingResult.grading_result || gradingResult;
+                    const isCorrect = innerGradingResult.correct || (innerGradingResult.score && innerGradingResult.score >= 60);
+                    
+                    console.log('批改结果数据:', gradingResult);
+                    console.log('内部批改结果:', innerGradingResult);
+                    console.log('是否正确:', isCorrect);
+                    
+                    let markPosition = { x: questionBox.right - 25, y: questionBox.top + 5 }; // 默认右上角，稍微偏移避免被边框遮挡
+                    
+                    // 检查是否有有效的作答区坐标
+                    const answerPosition = innerGradingResult.answer_area_position || gradingResult.answer_area_position;
+                    if (answerPosition) {
+                        console.log('作答区坐标:', answerPosition, '类型:', typeof answerPosition);
+                        
+                        // 处理对象格式或数组格式
+                        let answerX1, answerY1, answerX2, answerY2;
+                        let isValidCoords = false;
+                        
+                        if (answerPosition && typeof answerPosition === 'object' && !Array.isArray(answerPosition)) {
+                            // 新的对象格式
+                            answerX1 = answerPosition.x1;
+                            answerY1 = answerPosition.y1;
+                            answerX2 = answerPosition.x2;
+                            answerY2 = answerPosition.y2;
+                            
+                            if (answerX1 !== undefined && answerY1 !== undefined && answerX2 !== undefined && answerY2 !== undefined) {
+                                isValidCoords = answerX1 > 1 || answerY1 > 1 || answerX2 > 1 || answerY2 > 1;
+                            }
+                        } else if (Array.isArray(answerPosition) && answerPosition.length >= 8) {
+                            // 旧的数组格式
+                            answerX1 = answerPosition[0];
+                            answerY1 = answerPosition[1];
+                            answerX2 = answerPosition[4];
+                            answerY2 = answerPosition[5];
+                            
+                            // 检查坐标是否有效：不能全是0，但全是1也认为有效（可能在左上角）
+                            const allSame = answerPosition.every(coord => coord === answerPosition[0]);
+                            const isAllZeros = answerPosition[0] === 0;
+                            isValidCoords = !(allSame && isAllZeros);
+                            
+                            console.log('数组格式检查:', {
+                                allSame: allSame,
+                                isAllZeros: isAllZeros,
+                                firstValue: answerPosition[0],
+                                将显示答题区: isValidCoords
+                            });
+                        }
+                        
+                        console.log('作答区坐标解析:', {answerX1, answerY1, answerX2, answerY2}, '是否有效:', isValidCoords);
+                        
+                        if (isValidCoords && answerX1 !== undefined && answerY1 !== undefined && answerX2 !== undefined && answerY2 !== undefined) {
+                            // 检查并修正超出边界的坐标
+                            let correctedAnswerX1 = Math.max(0, Math.min(answerX1, originalImage.naturalWidth));
+                            let correctedAnswerY1 = Math.max(0, Math.min(answerY1, originalImage.naturalHeight));
+                            let correctedAnswerX2 = Math.max(0, Math.min(answerX2, originalImage.naturalWidth));
+                            let correctedAnswerY2 = Math.max(0, Math.min(answerY2, originalImage.naturalHeight));
+                            
+                            // 记录修正情况
+                            let answerCorrectionMade = false;
+                            if (answerX1 !== correctedAnswerX1) {
+                                console.warn(`作答区坐标x1值 ${answerX1} 超出边界，修正为 ${correctedAnswerX1}`);
+                                answerCorrectionMade = true;
+                            }
+                            if (answerY1 !== correctedAnswerY1) {
+                                console.warn(`作答区坐标y1值 ${answerY1} 超出边界，修正为 ${correctedAnswerY1}`);
+                                answerCorrectionMade = true;
+                            }
+                            if (answerX2 !== correctedAnswerX2) {
+                                console.warn(`作答区坐标x2值 ${answerX2} 超出边界，修正为 ${correctedAnswerX2}`);
+                                answerCorrectionMade = true;
+                            }
+                            if (answerY2 !== correctedAnswerY2) {
+                                console.warn(`作答区坐标y2值 ${answerY2} 超出边界，修正为 ${correctedAnswerY2}`);
+                                answerCorrectionMade = true;
+                            }
+                            
+                            if (answerCorrectionMade) {
+                                alert('发现作答区坐标超出图片边界，已自动修正');
+                            }
+                            
+                            const answerBox = {
+                                left: Math.min(correctedAnswerX1, correctedAnswerX2) * scaleX,
+                                top: Math.min(correctedAnswerY1, correctedAnswerY2) * scaleY,
+                                right: Math.max(correctedAnswerX1, correctedAnswerX2) * scaleX,
+                                bottom: Math.max(correctedAnswerY1, correctedAnswerY2) * scaleY
+                            };
+                            
+                            // 检查作答区是否在合理范围内
+                            if (answerBox.left >= 0 && answerBox.right <= originalImage.clientWidth &&
+                                answerBox.top >= 0 && answerBox.bottom <= originalImage.clientHeight &&
+                                answerBox.right > answerBox.left && answerBox.bottom > answerBox.top) {
+                            
+                            // 绘制作答区框
+                            const answerFrame = document.createElement('div');
+                            answerFrame.className = 'answer-frame';
+                            answerFrame.style.position = 'absolute';
+                            answerFrame.style.left = answerBox.left + 'px';
+                            answerFrame.style.top = answerBox.top + 'px';
+                            answerFrame.style.width = (answerBox.right - answerBox.left) + 'px';
+                            answerFrame.style.height = (answerBox.bottom - answerBox.top) + 'px';
+                            answerFrame.style.border = isCorrect ? '2px solid #28a745' : '2px solid #dc3545';
+                            answerFrame.style.borderRadius = '4px';
+                            answerFrame.style.background = isCorrect ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)';
+                            answerFrame.style.zIndex = '2';
+                            
+                            imageContainerDiv.appendChild(answerFrame);
+                            
+                            // 更新标记位置到作答区右上角，避免遮挡答案内容
+                            let tentativeX = answerBox.right - 25;
+                            let tentativeY = answerBox.top + 5;
+                            
+                            // 检查图标位置是否超出题目范围，如果超出则使用题目右上角位置
+                            if (tentativeX < questionBox.left || tentativeX > questionBox.right - 25 ||
+                                tentativeY < questionBox.top || tentativeY > questionBox.bottom - 25) {
+                                // 答题区超出题目范围，使用题目右上角位置
+                                markPosition.x = questionBox.right - 25;
+                                markPosition.y = questionBox.top + 5;
+                                console.log('答题区超出题目范围，使用题目右上角位置');
+                            } else {
+                                markPosition.x = tentativeX;
+                                markPosition.y = tentativeY;
+                            }
+                            }
+                        } else {
+                            console.log('作答区坐标无效，使用默认位置');
+                        }
+                    }
+                    
+                    // 创建对错标记
+                    const correctMark = document.createElement('div');
+                    correctMark.className = 'correct-mark';
+                    correctMark.style.position = 'absolute';
+                    correctMark.style.left = markPosition.x + 'px';
+                    correctMark.style.top = markPosition.y + 'px';
+                    correctMark.style.width = '24px';
+                    correctMark.style.height = '24px';
+                    correctMark.style.borderRadius = '50%';
+                    correctMark.style.display = 'flex';
+                    correctMark.style.alignItems = 'center';
+                    correctMark.style.justifyContent = 'center';
+                    correctMark.style.fontSize = '14px';
+                    correctMark.style.fontWeight = 'bold';
+                    correctMark.style.color = 'white';
+                    correctMark.style.zIndex = '3';
+                    correctMark.style.border = '2px solid white';
+                    correctMark.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                    
+                    if (isCorrect) {
+                        correctMark.style.background = 'rgba(40, 167, 69, 0.8)';
+                        correctMark.textContent = '✓';
+                        correctMark.title = `正确 (${gradingResult.score || 100}分)`;
+                    } else {
+                        correctMark.style.background = 'rgba(220, 53, 69, 0.8)';
+                        correctMark.textContent = '✗';
+                        correctMark.title = `错误 (${gradingResult.score || 0}分)`;
+                    }
+                    
+                    imageContainerDiv.appendChild(correctMark);
+                });
+            };
+            
+            container.appendChild(imageContainerDiv);
+            
+            // 添加批改详情摘要
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'results-summary';
+            summaryDiv.style.marginTop = '20px';
+            summaryDiv.style.padding = '15px';
+            summaryDiv.style.background = '#f8f9fa';
+            summaryDiv.style.borderRadius = '8px';
+            
+            const correctCount = results.filter(r => r.grading_result.correct || (r.grading_result.score && r.grading_result.score >= 60)).length;
+            const totalCount = results.length;
+            
+            summaryDiv.innerHTML = `
+                <h4>批改结果摘要</h4>
+                <p><strong>总题数:</strong> ${totalCount}</p>
+                <p><strong>正确题数:</strong> ${correctCount}</p>
+                <p><strong>正确率:</strong> ${((correctCount / totalCount) * 100).toFixed(1)}%</p>
+            `;
+            
+            container.appendChild(summaryDiv);
+            
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // 显示成功信息
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // 隐藏所有消息
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
