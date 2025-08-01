@@ -202,7 +202,7 @@ IMAGE_PROCESSING_API_TOKEN=YjkwZTdlM2EzYTE5ZTgyOGQwMGRlOWI1NzE0ZDk2NjcwNGNlNzI5Z
 # OCR识别API配置
 OCR_API_URL=https://api.textin.com/ai/service/v1/pdf_to_markdown
 OCR_APP_ID=2bae9d892b488e1d29f4ca0b650ad7a5
-OCR_SECRET_CODE=46d25182d74cb02b9fb8a06734fb73a4
+OCR_SECRET_CODE=
 
 # 知识库检索API配置（Dify平台）
 KNOWLEDGE_API_URL=http://agent.raysgo.com/v1/datasets/017f0684-e949-4e6f-a97a-50b7362680ae/retrieve
